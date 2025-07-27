@@ -10,9 +10,24 @@ git clone https://github.com/AyushSharma173/AutogradGPT.git
 cd AutogradGPT
 ```
 
-### 2. Install Dependencies
+### 2. Set Up Environment
+Create a virtual environment and install dependencies using `uv`:
+
 ```bash
-pip install -r requirements.txt  # or use your preferred package manager
+# Create virtual environment
+uv venv
+
+# Activate the environment (Linux/Mac)
+source .venv/bin/activate
+# On Windows: .venv\Scripts\activate
+
+# Install locked dependencies
+uv pip install --require-locked
+```
+
+Alternatively, if you prefer using other package managers:
+```bash
+pip install -r requirements.txt  # if you have a requirements.txt
 ```
 
 ### 3. Download Training Data
