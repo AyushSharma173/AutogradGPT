@@ -76,11 +76,6 @@ Run the tokenizer to process your datasets:
 python tokenizer.py
 ```
 
-### Training
-[Add training instructions here]
-
-### Text Generation
-[Add generation instructions here]
 
 ## Project Structure
 ```
