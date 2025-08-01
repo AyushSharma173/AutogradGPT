@@ -4,7 +4,6 @@ from utils import find_chunk_boundaries
 from collections import defaultdict
 import multiprocessing
 import regex
-
 from tqdm import tqdm
 
 def train_bpe(input_path: str, vocab_size: int, special_tokens: List[str]):
@@ -14,6 +13,7 @@ def train_bpe(input_path: str, vocab_size: int, special_tokens: List[str]):
         sentinels = [tok.encode("utf-8") for tok in special_tokens]
         if b"<|endoftext|>" not in sentinels:        # always include canonical EOT
             sentinels.append(b"<|endoftext|>")
+
         boundaries = find_chunk_boundaries(f, 4000, *sentinels)
         print(f"Found {len(boundaries)} chunk boundaries")
                     
@@ -26,26 +26,20 @@ def train_bpe(input_path: str, vocab_size: int, special_tokens: List[str]):
                 vocab[idx] = token_bytes
                 idx += 1
             else:
-                # Optional: you can log or store the existing ID if needed
                 pass
-
-        corpus = defaultdict(int)
 
         chunk_spans = chunk_spans = list(zip(boundaries[:-1], boundaries[1:]))
 
         args = [(start, end, input_path, special_tokens) for start, end in chunk_spans]
 
         with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-            print(f"Starting multiprocessing pool on {len(chunk_spans)} chunks...")
             results = pool.map(process_chunk, args)
-
         
         global_corpus = defaultdict(int)
         for local_corpus in results:
             for token_bytes, count in local_corpus.items():
                 global_corpus[token_bytes] += count
                 
-
         
         def merge_sequence(seq: Tuple[bytes, ...], pair: Tuple[bytes, bytes]) -> Tuple[bytes, ...]:
             A, B = pair
@@ -131,7 +125,6 @@ def process_chunk(args):
         
         for match in matches:
             pretoken = match.group(0)
-            # pretoken_bytes = tuple(pretoken.encode("utf-8"))
             pretoken_bytes = tuple(bytes([b]) for b in pretoken.encode("utf-8"))
             local_corpus[pretoken_bytes] += 1
             total += 1
@@ -151,26 +144,20 @@ def test_debug():
 import json
 
 if __name__ == "__main__":
-    # ✅ Path to raw training text
     input_path = "../data/TinyStoriesV2-GPT4-train.txt"
 
-    # ✅ Max vocab size including special tokens and byte vocab
     vocab_size = 10_000
 
-    # ✅ Must include this token for TinyStories
     special_tokens = ["<|endoftext|>"]
 
-    # ✅ Train BPE tokenizer
     vocab, merges = train_bpe(input_path, vocab_size, special_tokens)
 
     print(f"vocab size: {len(vocab)} • merges: {len(merges)}")
 
-    # ✅ Save vocab (convert bytes -> hex string so it's JSON serializable)
     vocab_json = {str(token_id): token_bytes.hex() for token_id, token_bytes in vocab.items()}
     with open("vocab.json", "w", encoding="utf-8") as f:
         json.dump(vocab_json, f, indent=2)
 
-    # ✅ Save merges (convert list[tuple[bytes, bytes]] -> list[tuple[str, str]])
     merges_json = [(t1.hex(), t2.hex()) for (t1, t2) in merges]
     with open("merges.json", "w", encoding="utf-8") as f:
         json.dump(merges_json, f, indent=2)

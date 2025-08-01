@@ -1,7 +1,0 @@
-README.md
-pyproject.toml
-cs336_basics.egg-info/PKG-INFO
-cs336_basics.egg-info/SOURCES.txt
-cs336_basics.egg-info/dependency_links.txt
-cs336_basics.egg-info/requires.txt
-cs336_basics.egg-info/top_level.txt
